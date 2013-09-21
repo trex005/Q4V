@@ -52,9 +52,10 @@ Crafty.c('Rock', {
 Crafty.c('PlayerCharacter', {
   init: function() {
     this.requires('Actor, Fourway, Collision, spr_player, SpriteAnimation')
-      .fourway(2)
+      .multiway(2, {UP_ARROW: -90, DOWN_ARROW: 90, RIGHT_ARROW: 0, LEFT_ARROW: 180})
       .stopOnSolids()
       .onHit('Village', this.visitVillage)
+      .onHit('Enemy', this.touchEnemy)
       // These next lines define our four animations
       //  each call to .animate specifies:
       //  - the name of the animation
@@ -104,6 +105,11 @@ Crafty.c('PlayerCharacter', {
   visitVillage: function(data) {
     villlage = data[0].obj;
     villlage.visit();
+  },
+  // Respond to this player visiting a village
+  touchEnemy: function(data) {
+    villlage = data[0].obj;
+    villlage.visit();
   }
 });
 
@@ -118,5 +124,19 @@ Crafty.c('Village', {
     this.destroy();
     Crafty.audio.play('knock');
     Crafty.trigger('VillageVisited', this);
+  }
+});
+
+Crafty.c('Enemy', {
+  init: function() {
+    this.requires('Actor, spr_enemy, Fourway')
+        .multiway(1.5, {W: -90, S: 90, D: 0, A: 180})
+  },
+
+  // Process a visitation with this village
+  visit: function() {
+    //this.destroy();
+    Crafty.audio.play('knock');
+    Crafty.trigger('EnemyTouched', this);
   }
 });

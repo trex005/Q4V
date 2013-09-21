@@ -1,12 +1,13 @@
 Game = {
   // This defines our grid's size and the size of each of its tiles
   map_grid: {
-    width:  24,
-    height: 16,
+    width:  50,
+    height: 30,
     tile: {
       width:  16,
       height: 16
-    }
+    },
+    max_villiages:10
   },
 
   // The total width of the game screen. Since our grid takes up the entire screen

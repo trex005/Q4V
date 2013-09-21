@@ -12,7 +12,7 @@ Crafty.scene('Game', function() {
   }
 
   // Player character, placed at 5, 5 on our grid
-  this.player = Crafty.e('PlayerCharacter').at(5, 5);
+  this.player = Crafty.e('PlayerCharacter').at(Game.map_grid.width/2, Game.map_grid.height/2);
   this.occupied[this.player.at().x][this.player.at().y] = true;
 
   // Place a tree at every edge square on our grid of 16x16 tiles
@@ -45,7 +45,10 @@ Crafty.scene('Game', function() {
       }
     }
   }
-
+  
+  // Generate an enemy on the map
+    
+  Crafty.e('Enemy').at(2, 2);
   // Play a ringing sound to indicate the start of the journey
   Crafty.audio.play('ring');
 
@@ -55,11 +58,16 @@ Crafty.scene('Game', function() {
       Crafty.scene('Victory');
     }
   });
+
+  this.show_defeat = this.bind('EnemyTouched', function() {
+      Crafty.scene('Defeat');
+  });
 }, function() {
   // Remove our event binding from above so that we don't
   //  end up having multiple redundant event watchers after
   //  multiple restarts of the game
   this.unbind('VillageVisited', this.show_victory);
+  this.unbind('EnemyTouched',this.show_defeat)
 });
 
 
@@ -70,6 +78,35 @@ Crafty.scene('Victory', function() {
   // Display some text in celebration of the victory
   Crafty.e('2D, DOM, Text')
     .text('All villages visited!')
+    .attr({ x: 0, y: Game.height()/2 - 24, w: Game.width() })
+    .css($text_css);
+
+  // Give'em a round of applause!
+  Crafty.audio.play('applause');
+
+  // After a short delay, watch for the player to press a key, then restart
+  // the game when a key is pressed
+  var delay = true;
+  setTimeout(function() { delay = false; }, 5000);
+  this.restart_game = Crafty.bind('KeyDown', function() {
+    if (!delay) {
+      Crafty.scene('Game');
+    }
+  });
+}, function() {
+  // Remove our event binding from above so that we don't
+  //  end up having multiple redundant event watchers after
+  //  multiple restarts of the game
+  this.unbind('KeyDown', this.restart_game);
+});
+
+// Victory scene
+// -------------
+// Tells the player when they've won and lets them start a new game
+Crafty.scene('Defeat', function() {
+  // Display some text in celebration of the victory
+  Crafty.e('2D, DOM, Text')
+    .text('You lose!')
     .attr({ x: 0, y: Game.height()/2 - 24, w: Game.width() })
     .css($text_css);
 
@@ -128,7 +165,10 @@ Crafty.scene('Loading', function(){
       spr_tree:    [0, 0],
       spr_bush:    [1, 0],
       spr_village: [0, 1],
-      spr_rock:    [1, 1]
+      spr_rock:    [1, 1],
+    });
+    Crafty.sprite(16, 'assets/16x16_forest_3.gif', {
+      spr_enemy:    [0, 0],
     });
 
     // Define the PC's sprite to be the first sprite in the third row of the
